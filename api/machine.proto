@@ -1,0 +1,271 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "github.com/talos-systems/talos/api/machine";
+option java_multiple_files = true;
+option java_outer_classname = "MachineApi";
+option java_package = "com.machine.api";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "common/common.proto";
+
+// The machine service definition.
+service MachineService {
+  rpc Copy(CopyRequest) returns (stream common.Data);
+  rpc Kubeconfig(google.protobuf.Empty) returns (stream common.Data);
+  rpc List(ListRequest) returns (stream FileInfo);
+  rpc Logs(LogsRequest) returns (stream common.Data);
+  rpc Mounts(google.protobuf.Empty) returns (MountsResponse);
+  rpc Read(ReadRequest) returns (stream common.Data);
+  rpc Reboot(google.protobuf.Empty) returns (RebootResponse);
+  rpc Reset(ResetRequest) returns (ResetResponse);
+  rpc ServiceList(google.protobuf.Empty) returns (ServiceListResponse);
+  rpc ServiceRestart(ServiceRestartRequest) returns (ServiceRestartResponse);
+  rpc ServiceStart(ServiceStartRequest) returns (ServiceStartResponse);
+  rpc ServiceStop(ServiceStopRequest) returns (ServiceStopResponse);
+  rpc Shutdown(google.protobuf.Empty) returns (ShutdownResponse);
+  rpc Upgrade(UpgradeRequest) returns (UpgradeResponse);
+
+  rpc Start(StartRequest) returns (StartResponse) {
+    option deprecated = true;
+  };
+  rpc Stop(StopRequest) returns (StopResponse) {
+    option deprecated = true;
+  };
+
+  rpc Version(google.protobuf.Empty) returns (VersionResponse);
+}
+
+// rpc reboot
+// The reboot message containing the reboot status.
+message Reboot {
+  common.Metadata metadata = 1;
+}
+message RebootResponse {
+  repeated Reboot messages = 1;
+}
+
+// rpc reset
+message ResetRequest {
+  bool graceful = 1;
+  bool reboot = 2;
+}
+
+// The reset message containing the restart status.
+message Reset {
+  common.Metadata metadata = 1;
+}
+message ResetResponse {
+  repeated Reset messages = 1;
+}
+
+// rpc shutdown
+// The messages message containing the shutdown status.
+message Shutdown {
+  common.Metadata metadata = 1;
+}
+message ShutdownResponse {
+  repeated Shutdown messages = 1;
+}
+
+// rpc upgrade
+message UpgradeRequest {
+  string image = 1;
+}
+message Upgrade {
+  common.Metadata metadata = 1;
+  string ack = 2;
+}
+message UpgradeResponse {
+  repeated Upgrade messages = 1;
+}
+
+// rpc servicelist
+message ServiceList {
+  common.Metadata metadata = 1;
+  repeated ServiceInfo services = 2;
+}
+message ServiceListResponse {
+  repeated ServiceList messages = 1;
+}
+
+message ServiceInfo {
+  string id = 1;
+  string state = 2;
+  ServiceEvents events = 3;
+  ServiceHealth health = 4;
+}
+
+message ServiceEvents {
+  repeated ServiceEvent events = 1;
+}
+
+message ServiceEvent {
+  string msg = 1;
+  string state = 2;
+  google.protobuf.Timestamp ts = 3;
+}
+
+message ServiceHealth {
+  bool unknown = 1;
+  bool healthy = 2;
+  string last_message = 3;
+  google.protobuf.Timestamp last_change = 4;
+}
+
+// rpc servicestart
+message ServiceStartRequest {
+  string id = 1;
+}
+
+message ServiceStart {
+  common.Metadata metadata = 1;
+  string resp = 2;
+}
+message ServiceStartResponse {
+  repeated ServiceStart messages = 1;
+}
+
+message ServiceStopRequest {
+  string id = 1;
+}
+
+message ServiceStop {
+  common.Metadata metadata = 1;
+  string resp = 2;
+}
+message ServiceStopResponse {
+  repeated ServiceStop messages = 1;
+}
+
+message ServiceRestartRequest {
+  string id = 1;
+}
+
+message ServiceRestart {
+  common.Metadata metadata = 1;
+  string resp = 2;
+}
+message ServiceRestartResponse {
+  repeated ServiceRestart messages = 1;
+}
+
+message StartRequest {
+  option deprecated = true;
+  string id = 1;
+}
+
+message StartResponse {
+  option deprecated = true;
+  string resp = 1;
+}
+
+message StopRequest {
+  option deprecated = true;
+  string id = 1;
+}
+
+message StopResponse {
+  option deprecated = true;
+  string resp = 1;
+}
+
+// CopyRequest describes a request to copy data out of Talos node
+//
+// Copy produces .tar.gz archive which is streamed back to the caller
+message CopyRequest {
+  // Root path to start copying data out, it might be either a file or directory
+  string root_path = 1;
+}
+
+// ListRequest describes a request to list the contents of a directory
+message ListRequest {
+  // Root indicates the root directory for the list.  If not indicated, '/' is
+  // presumed.
+  string root = 1;
+  // Recurse indicates that subdirectories should be recursed.
+  bool recurse = 2;
+  // RecursionDepth indicates how many levels of subdirectories should be
+  // recursed.  The default (0) indicates that no limit should be enforced.
+  int32 recursion_depth = 3;
+}
+
+// FileInfo describes a file or directory's information
+message FileInfo {
+  common.Metadata metadata = 1;
+  // Name is the name (including prefixed path) of the file or directory
+  string name = 2;
+  // Size indicates the number of bytes contained within the file
+  int64 size = 3;
+  // Mode is the bitmap of UNIX mode/permission flags of the file
+  uint32 mode = 4;
+  // Modified indicates the UNIX timestamp at which the file was last modified
+  int64 modified = 5; // TODO: unix timestamp or include proto's Date type
+  // IsDir indicates that the file is a directory
+  bool is_dir = 6;
+  // Error describes any error encountered while trying to read the file
+  // information.
+  string error = 7;
+  // Link is filled with symlink target
+  string link = 8;
+  // RelativeName is the name of the file or directory relative to the RootPath
+  string relative_name = 9;
+}
+
+// The messages message containing the requested df stats.
+message Mounts {
+  common.Metadata metadata = 1;
+  repeated MountStat stats = 2;
+}
+message MountsResponse {
+  repeated Mounts messages = 1;
+}
+
+// The messages message containing the requested processes.
+message MountStat {
+  string filesystem = 1;
+  uint64 size = 2;
+  uint64 available = 3;
+  string mounted_on = 4;
+}
+
+message Version {
+  common.Metadata metadata = 1;
+  VersionInfo version = 2;
+  PlatformInfo platform = 3;
+}
+
+message VersionResponse {
+  repeated Version messages = 1;
+}
+
+message VersionInfo {
+  string tag = 1;
+  string sha = 2;
+  string built = 3;
+  string go_version = 4;
+  string os = 5;
+  string arch = 6;
+}
+
+message PlatformInfo {
+  string name = 1;
+  string mode = 2;
+}
+
+// rpc logs
+// The request message containing the process name.
+message LogsRequest {
+  string namespace = 1;
+  string id = 2;
+  // driver might be default "containerd" or "cri"
+  common.ContainerDriver driver = 3;
+  bool follow = 4;
+  int32 tail_lines = 5;
+}
+
+message ReadRequest {
+  string path = 1;
+}

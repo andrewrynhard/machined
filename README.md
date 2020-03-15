@@ -1,7 +1,7 @@
-# project-template-go
+# machined
 
-## Initializing a New Project
+## Features
 
-1. Rename the title of this file.
-2. Run `go mod init <module>`, and `go mod tidy`
-3. Replace all occurrences of `CHANGEME`.
+- API driven
+- Ephemeral
+- Atomic upgrades

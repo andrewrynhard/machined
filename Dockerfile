@@ -66,11 +66,11 @@ RUN markdownlint --rules /node_modules/sentences-per-line/index.js .
 # The container target builds the container image.
 
 FROM base AS binary
-RUN --mount=type=cache,target=/root/.cache/go-build GOOS=linux go build -ldflags "-s -w" -o /CHANGEME
-RUN chmod +x /CHANGEME
+RUN --mount=type=cache,target=/root/.cache/go-build GOOS=linux go build -ldflags "-s -w" -o /machined
+RUN chmod +x /machined
 
 FROM scratch AS container
 COPY --from=docker.io/autonomy/ca-certificates:v0.1.0 / /
 COPY --from=docker.io/autonomy/fhs:v0.1.0 / /
-COPY --from=binary /CHANGEME /CHANGEME
-ENTRYPOINT [ "/CHANGEME" ]
+COPY --from=binary /machined /machined
+ENTRYPOINT [ "/machined" ]

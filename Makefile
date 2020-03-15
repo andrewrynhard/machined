@@ -4,7 +4,7 @@ SHA ?= $(shell git describe --match=none --always --abbrev=8 --dirty)
 TAG ?= $(shell git describe --tag --always --dirty)
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 REGISTRY_AND_USERNAME := $(REGISTRY)/$(USERNAME)
-NAME := CHANGEME
+NAME := machined
 IMAGE := $(REGISTRY_AND_USERNAME)/$(NAME)
 MODULE := $(shell head -1 go.mod | cut -d' ' -f2)
 
